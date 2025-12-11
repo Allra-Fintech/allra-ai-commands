@@ -47,6 +47,7 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 ### claude
 
 #### backend
+- `pr-review.md` - PR 생성 전 변경사항을 사전 검토하는 1차 셀프 리뷰 커맨드입니다.
 - `pr-create.md` - 변경사항을 분석하여 브랜치 생성부터 PR 생성까지 자동으로 수행합니다.
 - `pr-feedback.md` - PR에 달린 리뷰 코멘트를 분석하고 코드에 반영합니다.
 
