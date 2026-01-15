@@ -16,7 +16,7 @@ description: 변경사항 커밋 및 develop 브랜치로 PR 생성 (프로젝�
     - **develop 브랜치**로 PR 요청
     - PR 제목: **영어**로 작성 (예: "[✨ Feature] Add user authentication")
     - PR 내용: `.github/PULL_REQUEST_TEMPLATE.md` 템플릿 양식 준수(템플릿은 한글 유지, 내용은 **영어로** 작성)
-    - PR 생성 전에 PR 제목 사용자에게 확인
+    - PR 생성 전에 PR 제목 사용자에게 확인 후 생성
 
 ## 실행 단계
 
@@ -78,5 +78,6 @@ gh pr create --base develop --title "PR 제목" --body "PR 본문"
 1. `git status` 확인
 2. 변경사항이 있으면 → **`./gradlew spotlessApply` 실행** → `git add .` → 영어 커밋 메시지 작성 → 사용자에게 커밋 확인 → 커밋
 3. 변경사항을 분석하여 PR 제목(영어)과 본문(영어) 생성
-4. `gh pr create --base develop` 실행
-5. PR URL 반환
+4. PR 제목 사용자에게 확인
+5. `gh pr create --base develop` 실행
+6. PR URL 반환
