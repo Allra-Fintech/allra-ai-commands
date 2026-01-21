@@ -65,7 +65,10 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 (준비 중)
 
 ### cursor
-(예정)
+
+#### frontend
+- `commit.md` - 깃모지와 함께 커밋 메시지를 자동 생성하는 커맨드입니다.
+- `pr.md` - 변경사항을 분석하여 GitHub Pull Request를 자동 생성하는 커맨드입니다.
 
 ### codex
 (예정)
