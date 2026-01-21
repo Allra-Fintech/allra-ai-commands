@@ -62,7 +62,9 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 (준비 중)
 
 #### common
-(준비 중)
+- `clean-docs-structure-analysis.md` - 문서 구조 분석 및 최적화 가이드입니다.
+- `clean-docs-refine.md` - 문서 정제 및 품질 개선 가이드입니다.
+- `clean-docs-category.md` - 문서 분류 및 카테고리화 가이드입니다.
 
 ### cursor
 
