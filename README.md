@@ -15,7 +15,7 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
   | bash -s -- <AI도구> <직무명>
 ```
 
-**AI 도구**: `claude`, `cursor` (예정), `codex` (예정)
+**AI 도구**: `claude`, `codex` (지원), `cursor` (예정)
 
 **직무명**: `backend`, `frontend`, `data-engineering`, `devops`, `common`
 
@@ -23,6 +23,12 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 # 예시: Claude Code의 backend 커맨드 전체 설치
 curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/install.sh \
   | bash -s -- claude backend
+```
+
+```bash
+# 예시: Codex의 common 커맨드 전체 설치
+curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/install.sh \
+  | bash -s -- codex common
 ```
 
 > 이미 같은 이름의 커맨드가 있으면 `.bak` 파일로 백업 후 덮어씁니다.
@@ -33,13 +39,21 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 
 ```bash
 curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/<AI도구>/<직무명>/<커맨드>.md \
-  -o ~/.claude/commands/<커맨드>.md
+  -o <설치 대상 경로>/<커맨드>.md
 ```
 
+`<AI도구>`에 따라 설치 경로가 다릅니다.
+- `claude`: `~/.claude/commands`
+- `codex`: `~/.codex/commands`
+
 ```bash
-# 예시: Claude Code의 backend pr 커맨드만 설치
-curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/claude/backend/pr.md \
-  -o ~/.claude/commands/pr.md
+# 예시: Claude Code의 pr-create 커맨드만 설치
+curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/claude/backend/pr-create.md \
+  -o ~/.claude/commands/pr-create.md
+
+# 예시: Codex의 linear 커맨드만 설치
+curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/codex/common/linear.md \
+  -o ~/.codex/commands/linear.md
 ```
 
 ## 커맨드 목록
@@ -65,6 +79,8 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 - `clean-docs-structure-analysis.md` - 문서 구조 분석 및 최적화 가이드입니다.
 - `clean-docs-refine.md` - 문서 정제 및 품질 개선 가이드입니다.
 - `clean-docs-category.md` - 문서 분류 및 카테고리화 가이드입니다.
+- `linear.md` - Linear 이슈 조회(assignee/state/team/query/limit/sort, 인터랙티브 조회).
+- `linear.md` - Linear 이슈 조회(assignee/state/team/query/limit/sort, 인터랙티브 조회).
 
 ### cursor
 
@@ -73,4 +89,16 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 - `pr.md` - 변경사항을 분석하여 GitHub Pull Request를 자동 생성하는 커맨드입니다.
 
 ### codex
-(예정)
+
+#### backend
+#### frontend
+(준비 중)
+
+#### data-engineering
+(준비 중)
+
+#### devops
+(준비 중)
+
+#### common
+- `linear.md` - Linear 이슈 조회(조회 우선 UX, slash command `/linear` 기본형).
