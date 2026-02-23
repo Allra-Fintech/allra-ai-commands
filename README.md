@@ -15,7 +15,7 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
   | bash -s -- <AI도구> <직무명>
 ```
 
-**AI 도구**: `claude`, `codex` (지원), `cursor` (예정)
+**AI 도구**: `claude`, `codex`, `cursor`
 
 **직무명**: `backend`, `frontend`, `data-engineering`, `devops`, `common`
 
