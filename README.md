@@ -80,10 +80,8 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 - `clean-docs-refine.md` - 문서 정제 및 품질 개선 가이드입니다.
 - `clean-docs-category.md` - 문서 분류 및 카테고리화 가이드입니다.
 - `linear.md` - Linear 이슈 조회(assignee/state/team/query/limit/sort, 인터랙티브 조회).
-- `linear.md` - Linear 이슈 조회(assignee/state/team/query/limit/sort, 인터랙티브 조회).
 
 ### cursor
-
 #### frontend
 - `commit.md` - 깃모지와 함께 커밋 메시지를 자동 생성하는 커맨드입니다.
 - `pr.md` - 변경사항을 분석하여 GitHub Pull Request를 자동 생성하는 커맨드입니다.
