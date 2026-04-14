@@ -65,6 +65,8 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 - `pr-create.md` - 변경사항을 분석하여 브랜치 생성부터 PR 생성까지 자동으로 수행합니다.
 - `pr-feedback.md` - PR에 달린 리뷰 코멘트를 분석하고 코드에 반영합니다.
 - `allra-pr-create.md` - (올라 스쿼드용) 변경사항을 파악하여 커밋 및 템플릿을 준수하여 PR 생성을 수행합니다.
+- `pr-feedback-allra.md` - (올라 스쿼드용) PR 피드백 자동 처리 — CI 수정, CodeRabbit 리뷰 반영, 승인 대기까지 반복 수행.
+- `git-issue-allra.md` - (올라 스쿼드용) Git Issue 기반 기능 개발/버그 수정 자동화 및 구현 완료 보고서 등록.
 
 #### frontend
 (준비 중)
