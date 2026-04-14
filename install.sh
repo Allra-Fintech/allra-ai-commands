@@ -100,7 +100,7 @@ main() {
     # Download
     curl -sL "$source_url" -o "$target_path"
     echo -e "${GREEN}Installed: ${file}${NC}"
-    ((count++))
+    count=$((count + 1))
   done
 
   echo ""
