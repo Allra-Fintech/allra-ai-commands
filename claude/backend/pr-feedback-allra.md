@@ -9,6 +9,8 @@ disable-model-invocation: true
 현재 브랜치의 PR에 대해 CI 실패 수정 → CodeRabbit 리뷰 코멘트 처리 → PR 승인 대기까지 자동으로 반복 수행합니다.
 모든 GitHub 작업은 `gh` CLI를 사용합니다.
 
+**핵심 원칙**: APPROVED 될 때까지 사용자에게 묻지 않고 1분 간격으로 polling한다. CI/리뷰가 pending이어도 대기 여부를 확인하지 말고 그대로 1분 후 재실행한다. 사용자 확인이 필요한 경우는 오직 "비즈니스 로직 변경이 필요한 코멘트" 하나뿐이다.
+
 ## 인자
 - `$ARGUMENTS`: PR 번호 (생략 시 현재 브랜치의 PR 자동 탐지)
 
@@ -47,7 +49,7 @@ gh run view {runId} --log-failed
     - build: `./gradlew build`
   - 수정사항 커밋 & `git push`
 - **전체 pass인 경우:** 2단계로 진행
-- **pending/running 상태:** 사용자에게 알리고 대기 여부 확인
+- **pending/running 상태:** 1분 대기 후 1단계 재실행 (사용자에게 묻지 않음)
 
 ### 2단계: CodeRabbit 리뷰 코멘트 수집
 
@@ -153,8 +155,8 @@ gh pr view {prNumber} --json state,reviewDecision,statusCheckRollup --jq '{state
 - **APPROVED**: 사용자에게 승인 완료 알림 후 종료. 반복 루프도 종료.
 - **CHANGES_REQUESTED / REVIEW_REQUIRED**:
   - 처리할 코멘트나 CI 실패가 남아있으면 즉시 1단계부터 반복
-  - 모든 코멘트 resolved + CI pass인데 아직 미승인이면, `/loop` 동적 모드로 1분 간격 재확인 반복
-  - **반드시 APPROVED 될 때까지 자동 반복한다.** 사용자에게 중단 여부를 묻지 않고 계속 진행.
+  - 처리할 것이 없으면 1분 대기 후 0단계부터 재실행
+  - **반드시 APPROVED 될 때까지 자동 반복한다.** CI pending, 리뷰 pending, 승인 대기 등 어떤 이유로든 사용자에게 중단/대기 여부를 묻지 않고 1분 간격으로 polling한다.
 
 ## 커밋 규칙
 - 커밋 메시지: 프로젝트 컨벤션 준수 (`[카테고리] 영문 제목`)
