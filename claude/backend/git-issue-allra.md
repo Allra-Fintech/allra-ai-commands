@@ -35,7 +35,7 @@ gh issue view $ARGUMENTS --repo $REPO
 
 ### 1단계: 브랜치 생성
 
-이슈 제목과 본문을 분석하여 작업 유형을 판단하고 브랜치를 생성합니다.
+이슈 제목과 본문을 분석하여 작업 유형을 판단한 뒤, **이슈에 자동 연결되는 원격 브랜치**를 생성하고 로컬로 체크아웃합니다. (GitHub UI의 "Create a branch" 버튼과 동일한 효과로, 이슈 페이지의 Development 섹션에 브랜치가 자동 등록됨)
 
 **작업 유형 판단 기준:**
 
@@ -49,24 +49,15 @@ gh issue view $ARGUMENTS --repo $REPO
 | 리팩토링 | `refactor/` | 기능 변경 없이 코드 구조/품질 개선 |
 | 기타 작업 | `chore/` | 설정 변경, 의존성 업데이트, 문서 작업 등 |
 
-**브랜치 이름 규칙:** `{접두사}{이슈번호}-{제목-kebab-case}`
-
-```bash
-# 이슈 정보 조회
-gh issue view $ARGUMENTS --repo $REPO --json title,body,labels
-
-# 이슈 내용을 분석하여 작업 유형 판단
-# 제목을 kebab-case로 변환 (한글은 그대로 유지, 공백→하이픈, 소문자화, 특수문자/이모지/태그 제거)
-
-# 브랜치 생성 및 체크아웃
-BRANCH_NAME="{접두사}$ARGUMENTS-{kebab-case-제목}"
-git checkout -b $BRANCH_NAME
-```
-
 **판단이 애매한 경우:** 사용자에게 이슈 유형을 질문하여 브랜치 접두사를 결정합니다.
 
+**브랜치 이름 규칙:** `{접두사}{이슈번호}-{제목-kebab-case}`
+
+- 한글은 그대로 유지, 공백→하이픈, 소문자화, 특수문자/이모지/태그 제거
+
 사용자에게 생성할 브랜치명을 보여주고 확인을 받습니다:
-```
+
+```text
 ## 브랜치 생성
 
 - 이슈 제목: {이슈 제목}
@@ -75,6 +66,70 @@ git checkout -b $BRANCH_NAME
 
 이 브랜치로 작업을 시작할까요?
 ```
+
+확인 후 아래 순서로 이슈에 연결된 원격 브랜치를 생성합니다:
+
+```bash
+set -euo pipefail
+
+ISSUE_NUMBER=$ARGUMENTS
+
+# 1) 레포/이슈 노드 ID 및 기본 브랜치 조회 (GraphQL 변수 사용으로 쿼리 인젝션 방지)
+OWNER=$(gh repo view --json owner --jq '.owner.login')
+NAME=$(gh repo view --json name --jq '.name')
+
+IDS=$(gh api graphql \
+  -F owner="$OWNER" -F name="$NAME" -F number="$ISSUE_NUMBER" \
+  -f query='
+query($owner: String!, $name: String!, $number: Int!) {
+  repository(owner: $owner, name: $name) {
+    id
+    issue(number: $number) { id title }
+    defaultBranchRef { name }
+  }
+}')
+REPO_NODE_ID=$(echo "$IDS" | jq -r '.data.repository.id')
+ISSUE_NODE_ID=$(echo "$IDS" | jq -r '.data.repository.issue.id')
+DEFAULT_BRANCH=$(echo "$IDS" | jq -r '.data.repository.defaultBranchRef.name')
+
+# 2) base 브랜치 결정 (develop 우선, 없으면 기본 브랜치)
+BASE_REF=develop
+if ! git ls-remote --exit-code --heads origin "$BASE_REF" >/dev/null 2>&1; then
+  BASE_REF="$DEFAULT_BRANCH"
+fi
+git fetch origin "$BASE_REF"
+BASE_OID=$(git rev-parse "origin/$BASE_REF")
+
+# 3) 브랜치명 결정 후 이슈에 연결된 원격 브랜치 생성
+BRANCH_NAME="{접두사}${ISSUE_NUMBER}-{kebab-case-제목}"
+
+gh api graphql \
+  -F issueId="$ISSUE_NODE_ID" \
+  -F oid="$BASE_OID" \
+  -F name="$BRANCH_NAME" \
+  -F repoId="$REPO_NODE_ID" \
+  -f query='
+mutation($issueId: ID!, $oid: GitObjectID!, $name: String, $repoId: ID) {
+  createLinkedBranch(input: {
+    issueId: $issueId,
+    oid: $oid,
+    name: $name,
+    repositoryId: $repoId
+  }) {
+    linkedBranch { ref { name } }
+  }
+}'
+
+# 4) 로컬 체크아웃 (refs 전파 대비: 전체 fetch 후 원격 추적 브랜치 기준 체크아웃)
+git fetch origin
+git checkout -b "$BRANCH_NAME" "origin/$BRANCH_NAME"
+```
+
+**실패 처리:**
+
+- **`already exists` 에러**: 원격에 동일 이름 브랜치가 이미 존재 → mutation을 건너뛰고 `git fetch origin && git checkout -b "$BRANCH_NAME" "origin/$BRANCH_NAME"`만 수행
+- **권한 부족 / API 실패**: `git checkout -b "$BRANCH_NAME"` 로컬 fallback 후 사용자에게 "이슈 링크 실패, 수동 연결 필요" 안내
+- **OAuth scope**: `gh auth status` 출력에 `repo` (public은 `public_repo`) scope가 있어야 mutation이 허용됨
 
 ### 2단계: 요구사항 분석
 
