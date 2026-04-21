@@ -152,6 +152,12 @@ gh pr view {prNumber} --json reviewDecision --jq '.reviewDecision'
 gh pr view {prNumber} --json state,reviewDecision,statusCheckRollup --jq '{state, reviewDecision, checks: [.statusCheckRollup[] | {name: .name, status: .status, conclusion: .conclusion}]}'
 ```
 
+APPROVED 조건을 `reviewDecision == "APPROVED"` 만으로 보지 말고, 다음 중 하나면 APPROVED로 간주하고 종료:
+
+1. `reviewDecision == "APPROVED"` (인간 CODEOWNERS 승인)
+2. 또는 `reviews` 중 state=APPROVED가 1건 이상 존재 + 모든 스레드 resolved + CI pass
+   (CodeRabbit처럼 authorAssociation=NONE인 봇 승인도 실무상 승인으로 취급)
+
 - **APPROVED**: 사용자에게 승인 완료 알림 후 종료. 반복 루프도 종료.
 - **CHANGES_REQUESTED / REVIEW_REQUIRED**:
   - 처리할 코멘트나 CI 실패가 남아있으면 즉시 1단계부터 반복
