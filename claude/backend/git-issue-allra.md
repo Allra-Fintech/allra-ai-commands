@@ -51,9 +51,13 @@ gh issue view $ARGUMENTS --repo $REPO
 
 **판단이 애매한 경우:** 사용자에게 이슈 유형을 질문하여 브랜치 접두사를 결정합니다.
 
-**브랜치 이름 규칙:** `{접두사}{이슈번호}-{제목-kebab-case}`
+**브랜치 이름 규칙:** `{접두사}{이슈번호}-{english-kebab-case-제목}`
 
-- 한글은 그대로 유지, 공백→하이픈, 소문자화, 특수문자/이모지/태그 제거
+- **이슈 제목이 한글인 경우 영어로 번역**하여 사용 (작업 내용을 간결하게 표현하는 영어 키워드 조합)
+- 공백→하이픈, 소문자화, 특수문자/이모지/태그 제거
+- 너무 길어지지 않도록 핵심 키워드 3~5개 내외로 요약
+- 예시: "회원 가입 API 버그 수정" → `fix/902-signup-api-bug`
+- 예시: "결제 수단 추가 기능 개발" → `feature/903-add-payment-method`
 
 사용자에게 생성할 브랜치명을 보여주고 확인을 받습니다:
 
@@ -101,7 +105,7 @@ git fetch origin "$BASE_REF"
 BASE_OID=$(git rev-parse "origin/$BASE_REF")
 
 # 3) 브랜치명 결정 후 이슈에 연결된 원격 브랜치 생성
-BRANCH_NAME="{접두사}${ISSUE_NUMBER}-{kebab-case-제목}"
+BRANCH_NAME="{접두사}${ISSUE_NUMBER}-{english-kebab-case-제목}"
 
 gh api graphql \
   -F issueId="$ISSUE_NODE_ID" \
