@@ -16,10 +16,15 @@ RAW_URL="https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main"
 usage() {
   echo "Usage: $0 <ai-tool> <role>"
   echo ""
-  echo "AI Tools: claude, cursor, codex"
+  echo "AI Tools: cursor, codex"
   echo "Roles: backend, frontend, data-engineering, devops, common"
   echo ""
-  echo "Example: $0 claude backend"
+  echo "Example: $0 cursor frontend"
+  echo ""
+  echo "Note: Claude Code 사용자는 마켓플레이스 방식을 권장합니다."
+  echo "      Claude Code 안에서 다음 명령을 실행하세요:"
+  echo "        /plugin marketplace add Allra-Fintech/allra-ai-commands"
+  echo "        /plugin install backend@allra-ai-commands"
   exit 1
 }
 
@@ -27,9 +32,6 @@ usage() {
 get_target_dir() {
   local tool=$1
   case $tool in
-    claude)
-      echo "$HOME/.claude/commands"
-      ;;
     cursor)
       echo "$HOME/.cursor/commands"
       ;;
@@ -52,11 +54,23 @@ main() {
     usage
   fi
 
+  # Claude Code 는 마켓플레이스 방식으로 전환됨
+  if [ "$ai_tool" = "claude" ]; then
+    echo -e "${YELLOW}Claude Code 는 플러그인 마켓플레이스 방식을 사용합니다.${NC}"
+    echo ""
+    echo "Claude Code 안에서 다음 명령을 실행하세요:"
+    echo -e "  ${GREEN}/plugin marketplace add Allra-Fintech/allra-ai-commands${NC}"
+    echo -e "  ${GREEN}/plugin install ${role}@allra-ai-commands${NC}"
+    echo ""
+    echo "이후 git push 시 다음 세션 시작 때 자동 업데이트됩니다."
+    exit 0
+  fi
+
   # Validate AI tool
   local target_dir=$(get_target_dir "$ai_tool")
   if [ -z "$target_dir" ]; then
     echo -e "${RED}Error: Unknown AI tool '$ai_tool'${NC}"
-    echo "Supported tools: claude, cursor, codex"
+    echo "Supported tools: cursor, codex (claude 는 마켓플레이스 사용)"
     exit 1
   fi
 

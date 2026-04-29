@@ -1,3 +1,9 @@
+---
+description: PR 리뷰 코멘트를 분석해 코드 반영 또는 스킵 사유 댓글 자동 등록
+argument-hint: "[PR번호 (생략 시 현재 브랜치 PR 자동 탐지)]"
+disable-model-invocation: true
+---
+
 # PR 리뷰 코멘트 처리
 
 PR 코멘트를 확인하고, 반영할 것은 코드에 적용, 건너뛸 것은 사유를 댓글로 남깁니다.

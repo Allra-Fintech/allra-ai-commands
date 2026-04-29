@@ -1,0 +1,11 @@
+{
+  "name": "common",
+  "description": "Allra 직무 공통 Claude Code 커맨드 (Linear 이슈 등)",
+  "author": {
+    "name": "Allra"
+  },
+  "homepage": "https://github.com/Allra-Fintech/allra-ai-commands",
+  "repository": "https://github.com/Allra-Fintech/allra-ai-commands",
+  "license": "MIT",
+  "keywords": ["common", "linear"]
+}
