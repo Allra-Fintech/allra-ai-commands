@@ -1,3 +1,9 @@
+---
+description: 현재 변경사항을 기반으로 브랜치 생성, 커밋, 푸시, PR 생성까지 자동 수행
+argument-hint: "[대상 브랜치 (기본: develop)]"
+disable-model-invocation: true
+---
+
 # PR 워크플로우 자동화
 
 현재 변경사항을 기반으로 브랜치 생성, 커밋, 푸시, PR 생성까지 자동으로 수행합니다.

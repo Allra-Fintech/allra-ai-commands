@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "description": "Allra 백엔드 직무용 Claude Code 커맨드 모음 (Git Issue, PR 생성/피드백/리뷰)",
+  "author": {
+    "name": "Allra Backend Team"
+  },
+  "homepage": "https://github.com/Allra-Fintech/allra-ai-commands",
+  "repository": "https://github.com/Allra-Fintech/allra-ai-commands",
+  "license": "MIT",
+  "keywords": ["backend", "java", "spring", "pr", "git-issue"]
+}
