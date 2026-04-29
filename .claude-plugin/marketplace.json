@@ -5,20 +5,17 @@
     "name": "Allra",
     "email": "backend@allra.com"
   },
-  "metadata": {
-    "pluginRoot": "./claude"
-  },
   "plugins": [
     {
       "name": "backend",
-      "source": "./backend",
+      "source": "./claude/backend",
       "description": "백엔드 직무용 커맨드 (Git Issue, PR 생성/피드백/리뷰)",
       "category": "role",
       "tags": ["backend", "java", "spring"]
     },
     {
       "name": "common",
-      "source": "./common",
+      "source": "./claude/common",
       "description": "공통 커맨드 (Linear 이슈 등)",
       "category": "common",
       "tags": ["common", "linear"]
