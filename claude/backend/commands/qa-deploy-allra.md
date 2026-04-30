@@ -7,7 +7,7 @@ GitHub PR/이슈 URL 목록을 받아 각 레포의 qa 브랜치에 머지하고
 
 입력: $ARGUMENTS
 
-> 사용 예: `/allra-qa-deploy 20260430 https://github.com/Allra-Fintech/allra-v1-admin/pull/181 https://github.com/Allra-Fintech/allra-front-api/pull/910`
+> 사용 예: `/qa-deploy-allra 20260430 https://github.com/Allra-Fintech/allra-v1-admin/pull/181 https://github.com/Allra-Fintech/allra-front-api/pull/910`
 >
 > 인자가 비었거나 형식이 어긋나면 즉시 위 사용 예를 보여주고 종료한다.
 
@@ -16,7 +16,7 @@ GitHub PR/이슈 URL 목록을 받아 각 레포의 qa 브랜치에 머지하고
 첫 번째 인자는 **QA 날짜** (YYYYMMDD), 나머지는 GitHub PR 또는 Issue URL 목록.
 
 ```
-/allra-qa-deploy 20260417 <URL1> <URL2> ...
+/qa-deploy-allra 20260417 <URL1> <URL2> ...
 ```
 
 QA 브랜치명은 `qa/YYYYMMDD` 로 결정된다.
