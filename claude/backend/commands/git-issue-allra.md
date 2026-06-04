@@ -14,9 +14,9 @@ disable-model-invocation: true
 
 | 호출 | 동작 |
 |------|------|
-| `/git-issue-allra {이슈번호}` | 작업 모드 — 서브 이슈를 우선순위대로 한 레포씩 구현 |
-| `/git-issue-allra {이슈번호} report` | 보고서 모드 (이슈 명시) — 모든 서브 PR 검증 → 각 PR 보고서 → 메인 이슈 체크리스트 |
-| `/git-issue-allra report` | 보고서 모드 (자동 감지) — 현재 브랜치 PR → 메인 이슈 추적, 모호하면 사용자에게 질문 |
+| `/backend:git-issue-allra {이슈번호}` | 작업 모드 — 서브 이슈를 우선순위대로 한 레포씩 구현 |
+| `/backend:git-issue-allra {이슈번호} report` | 보고서 모드 (이슈 명시) — 모든 서브 PR 검증 → 각 PR 보고서 → 메인 이슈 체크리스트 |
+| `/backend:git-issue-allra report` | 보고서 모드 (자동 감지) — 현재 브랜치 PR → 메인 이슈 추적, 모호하면 사용자에게 질문 |
 
 ---
 
@@ -229,15 +229,16 @@ git checkout -b "$BRANCH_NAME" "origin/$BRANCH_NAME"
 ```
 {레포}#{서브이슈번호} 구현+테스트 완료
 다음:
-  1. /pr-review        — 셀프 리뷰
-  2. /pr-create-allra  — PR 생성 (closes #{서브이슈번호} 포함)
+  1. /code-review            — 셀프 리뷰 (Claude 내장 커맨드)
+  2. /backend:pr-create-allra  — PR 생성 (closes #{서브이슈번호} 포함)
+  3. /backend:pr-feedback-allra — (권장) 팀원 리뷰 코멘트 자동 처리
 PR이 올라오면 다음 서브 이슈로 넘어갑니다. 진행할까요?
 ```
 
 PR 생성 확인 후 루트로 복귀:
 ```bash
 PR_NUM=$(gh pr list --repo "$SUB_REPO" --head "$BRANCH_NAME" --json number --jq '.[0].number')
-[ -n "$PR_NUM" ] || { echo "PR 미생성. /pr-create-allra 실행 후 재시도."; exit 1; }
+[ -n "$PR_NUM" ] || { echo "PR 미생성. /backend:pr-create-allra 실행 후 재시도."; exit 1; }
 echo "PR 생성 확인: $SUB_REPO#$PR_NUM"
 cd "$(cat /tmp/git-issue-allra-root.txt)"
 ```
@@ -249,8 +250,8 @@ cd "$(cat /tmp/git-issue-allra-root.txt)"
 | 레포 | 서브 이슈 | PR | 브랜치 |
 | ... | ... | ... | ... |
 
-각 PR이 머지되면: /git-issue-allra {메인이슈번호} report
-또는 현재 브랜치에서: /git-issue-allra report
+각 PR이 머지되면: /backend:git-issue-allra {메인이슈번호} report
+또는 현재 브랜치에서: /backend:git-issue-allra report
 ```
 
 ---
@@ -419,31 +420,31 @@ done < /tmp/git-issue-allra-pr-table.tsv
 - **레포 디렉토리 가정**: 워크스페이스 루트 아래에 각 서브 레포가 `레포명` 디렉토리로 클론되어 있어야 함. 없으면 사용자에게 클론 안내.
 - **메인 이슈 레포는 로컬 클론 불필요**: `gh --repo` 로만 접근.
 - **루트 디렉토리 복귀**: 서브 레포 작업 후 반드시 `cd "$(cat /tmp/git-issue-allra-root.txt)"`.
-- **PR 생성 단계**: 본 커맨드는 PR을 직접 만들지 않고 `/pr-create-allra` 를 호출하도록 안내 — PR 생성 확인 후에만 다음 서브로.
+- **PR 생성 단계**: 본 커맨드는 PR을 직접 만들지 않고 `/backend:pr-create-allra` 를 호출하도록 안내 — PR 생성 확인 후에만 다음 서브로.
 - **보고서 모드 사전 조건**: 모든 서브 PR이 머지되어야 함. 하나라도 미머지면 전체 등록 거부.
 - **저자/저작권 정보 금지**: 커밋 메시지·코멘트에 `Co-Authored-By`, `Author` 등 포함 금지.
 
 ## 사용 예시
 
 ```bash
-/git-issue-allra 410           # 작업 모드
-/git-issue-allra 410 report    # 보고서 모드 (이슈 명시)
-/git-issue-allra report        # 보고서 모드 (자동 감지)
+/backend:git-issue-allra 410           # 작업 모드
+/backend:git-issue-allra 410 report    # 보고서 모드 (이슈 명시)
+/backend:git-issue-allra report        # 보고서 모드 (자동 감지)
 ```
 
 ## 워크플로우 연계
 
 ```
-/git-issue-allra {메인번호}
+/backend:git-issue-allra {메인번호}
   → 메인+서브 이슈 분석 (allra-ai-analysis)
   → (복잡 시) EnterPlanMode → 사용자 동의
   → 우선순위 결정
   → 서브 이슈마다 반복:
        cd {레포} → createLinkedBranch → 구현+테스트
-       → /pr-review → /pr-create-allra → 다음 서브
+       → /code-review → /backend:pr-create-allra → (권장) /backend:pr-feedback-allra → 다음 서브
 
 (모든 PR 머지 후)
-/git-issue-allra {메인번호} report   또는   /git-issue-allra report
+/backend:git-issue-allra {메인번호} report   또는   /backend:git-issue-allra report
   → 모든 서브 PR 머지 검증
   → 각 PR 보고서 코멘트
   → 메인 이슈 체크리스트 체크

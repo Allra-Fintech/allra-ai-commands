@@ -47,7 +47,7 @@ disable-model-invocation: true
 
 ## 사용 예시
 ```
-/pr-create              # develop으로 PR 생성
-/pr-create main         # main으로 PR 생성
-/pr-create feature/base # feature/base로 PR 생성
+/backend:pr-create              # develop으로 PR 생성
+/backend:pr-create main         # main으로 PR 생성
+/backend:pr-create feature/base # feature/base로 PR 생성
 ```

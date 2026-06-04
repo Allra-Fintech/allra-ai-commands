@@ -50,6 +50,6 @@ gh api repos/{owner}/{repo}/pulls/{prNumber}/comments \
 
 ## 사용 예시
 ```
-/pr-feedback        # 현재 브랜치 PR
-/pr-feedback 58     # PR #58
+/backend:pr-feedback        # 현재 브랜치 PR
+/backend:pr-feedback 58     # PR #58
 ```

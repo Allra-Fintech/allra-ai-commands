@@ -1,6 +1,6 @@
 ---
 description: PR 피드백 자동 처리 — CI 수정, CodeRabbit 리뷰 반영, 승인 대기 (Allra)
-argument-hint: "[PR번호]"
+argument-hint: "[PR번호 (생략 시 자동 탐지)]"
 disable-model-invocation: true
 ---
 
@@ -179,6 +179,6 @@ APPROVED 조건을 `reviewDecision == "APPROVED"` 만으로 보지 말고, 다�
 
 ## 사용 예시
 ```
-/pr-feedback-allra           # 현재 브랜치 PR 자동 처리
-/pr-feedback-allra 165       # PR #165 자동 처리
+/backend:pr-feedback-allra           # 현재 브랜치 PR 자동 처리
+/backend:pr-feedback-allra 165       # PR #165 자동 처리
 ```

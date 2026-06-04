@@ -110,7 +110,7 @@ PR을 생성하기 전에 현재 변경사항을 사전 검토하는 1차 셀프
 
 ### 6단계: 완료 안내
 - 리뷰 완료 메시지 출력
-- 다음 단계 안내: `/pr-create` 사용 권장
+- 다음 단계 안내: `/backend:pr-create` 사용 권장
 - 수정된 파일 목록 요약
 
 ## 주의사항
@@ -122,20 +122,20 @@ PR을 생성하기 전에 현재 변경사항을 사전 검토하는 1차 셀프
 ## 사용 예시
 ```
 # 1. 코드 작성 완료 후
-/pr-review
+/backend:pr-review
 
 # 2. 리뷰 결과 확인 및 수정
 # (대화형으로 진행)
 
 # 3. 리뷰 통과 후 PR 생성
-/pr-create
+/backend:pr-create
 ```
 
 ## 워크플로우 연계
 ```
-코드 작성 → /pr-review (1차 셀프 리뷰) → /pr-create (PR 생성) → /pr-feedback (팀원 리뷰 반영)
+코드 작성 → /backend:pr-review (1차 셀프 리뷰) → /backend:pr-create (PR 생성) → /backend:pr-feedback (팀원 리뷰 반영)
 ```
 
 ## 관련 커맨드
-- `/pr-create`: PR 생성 워크플로우 자동화
-- `/pr-feedback`: PR 리뷰 코멘트 처리 자동화
+- `/backend:pr-create`: PR 생성 워크플로우 자동화
+- `/backend:pr-feedback`: PR 리뷰 코멘트 처리 자동화
