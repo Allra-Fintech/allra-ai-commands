@@ -222,7 +222,27 @@ git checkout -b "$BRANCH_NAME" "origin/$BRANCH_NAME"
 - 이슈 본문 / 설계 문서 / 참고 파일을 먼저 읽어 기존 컨벤션·패턴 파악
 - 서브 이슈 체크리스트를 하나씩 구현
 - 설계와 다르게 구현한 부분은 반드시 기록 (보고서 반영)
-- 컴파일 → 기존 테스트 → 신규 테스트 → 전체 테스트 (Gradle 프로젝트면 `./gradlew compileJava compileTestJava && ./gradlew test`, 다른 빌드 도구면 그에 맞게)
+- 컴파일 → 기존 테스트 → 신규 테스트 순으로 검증하되, **테스트는 변경 범위로 한정해 실행한다** (아래 참조)
+
+**테스트 실행 범위 — 전체 실행은 지양**
+
+전체 스위트는 Testcontainers 때문에 레포에 따라 10~20분이 걸린다(변경 범위 타겟 실행은 대개 1분 내외). CI 가 어차피 전체를 돌리므로 로컬에서 같은 걸 재현하는 건 대부분 중복이다.
+
+```bash
+# 기본 — 변경한 패키지만
+./gradlew compileJava compileTestJava
+./gradlew test --tests "kr.co.allra.{service}.{domain}.*"
+
+# 공용 타입(엔티티·레포지토리·유틸)을 건드렸으면 grep 으로 참조처를 찾아 거기까지만 확장
+./gradlew test --tests "*{Domain}*" --tests "*{SharedType}*"
+
+# 정적 분석·포맷은 빠르니 항상 함께 (CI 실패를 미리 잡는다)
+./gradlew spotlessApply sonarlintMain sonarlintTest
+```
+
+- **전체 실행(`./gradlew test`)은 다음 경우에만**: 여러 도메인이 공유하는 공용 모듈을 광범위하게 변경했거나, 사용자가 명시적으로 요청했을 때
+- 오래 걸리는 명령은 백그라운드로 띄우고 그동안 다른 작업을 진행한다
+- Maven(`allra-v1-5-api`)은 `./mvnw test -Dtest=ClassName`, Node(`allra-v1-api`)는 `npx jest {path}` 로 같은 원칙 적용
 
 #### 4-4. PR 생성 후 다음 서브로
 

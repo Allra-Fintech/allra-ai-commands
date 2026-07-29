@@ -45,7 +45,7 @@ gh run view {runId} --log-failed
     - sonarlintMain: `./gradlew sonarlintMain`
     - sonarlintTest: `./gradlew sonarlintTest`
     - spotlessCheck: `./gradlew spotlessApply`
-    - test: `SPRING_PROFILES_ACTIVE=test ./gradlew test`
+    - test: **실패한 테스트만** `SPRING_PROFILES_ACTIVE=test ./gradlew test --tests "{실패한 FQCN}"` (로그에서 실패 클래스를 특정할 것. 전체 실행은 실패가 광범위할 때만)
     - build: `./gradlew build`
   - 수정사항 커밋 & `git push`
 - **전체 pass인 경우:** 2단계로 진행
@@ -130,17 +130,20 @@ mutation {
 ### 4단계: 수정사항 push
 
 ```bash
-# 포맷팅 적용
-./gradlew spotlessApply
+# 포맷팅 + 정적 분석 (빠르므로 항상)
+./gradlew spotlessApply spotlessCheck sonarlintMain sonarlintTest
 
-# 로컬 CI 검증
-SPRING_PROFILES_ACTIVE=test ./gradlew test spotlessCheck sonarlintMain sonarlintTest
+# 테스트는 변경 범위만 (전체 실행 지양 — 아래 참조)
+SPRING_PROFILES_ACTIVE=test ./gradlew test --tests "kr.co.allra.{service}.{domain}.*"
 
 # push
 git push
 ```
 
 - 검증 실패 시 수정 후 재시도
+- **전체 실행(`./gradlew test`)은 지양한다.** 전체 스위트는 Testcontainers 때문에 10~20분이 걸리는데 CI 가 어차피 전체를 돌리므로 로컬 재현은 대부분 중복이다. 리뷰 반영은 보통 몇 개 파일 수정이라 변경 범위 타겟 실행으로 충분하다
+- 공용 타입(엔티티·레포지토리·유틸)을 건드렸으면 `grep` 으로 참조처를 찾아 거기까지만 확장한다: `--tests "*{Domain}*" --tests "*{SharedType}*"`
+- 전체 실행이 정당한 경우: 여러 도메인이 공유하는 공용 모듈을 광범위하게 변경했거나, 사용자가 명시적으로 요청했을 때. 이 경우 백그라운드로 띄우고 그동안 리뷰 코멘트 처리를 이어간다
 
 ### 5단계: PR 승인 상태 확인
 
