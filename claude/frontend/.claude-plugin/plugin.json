@@ -1,0 +1,11 @@
+{
+  "name": "frontend",
+  "description": "Allra 프론트엔드 직무용 Claude Code 커맨드 모음 (개발 워크플로, 코드 점검, 리팩토링)",
+  "author": {
+    "name": "Allra Frontend Team"
+  },
+  "homepage": "https://github.com/Allra-Fintech/allra-ai-commands",
+  "repository": "https://github.com/Allra-Fintech/allra-ai-commands",
+  "license": "MIT",
+  "keywords": ["frontend", "workflow", "refactor", "audit", "qa"]
+}

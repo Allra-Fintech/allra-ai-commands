@@ -14,6 +14,13 @@
       "tags": ["backend", "java", "spring"]
     },
     {
+      "name": "frontend",
+      "source": "./claude/frontend",
+      "description": "프론트엔드 직무용 커맨드 (개발 워크플로, 코드 점검, 리팩토링)",
+      "category": "role",
+      "tags": ["frontend", "workflow", "refactor", "audit", "qa"]
+    },
+    {
       "name": "common",
       "source": "./claude/common",
       "description": "공통 커맨드 (Linear 이슈 등)",
