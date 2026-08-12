@@ -7,9 +7,9 @@ GitHub PR/이슈 URL 목록을 받아 각 레포의 배포 방식에 맞게 QA �
 
 입력: $ARGUMENTS
 
-> 사용 예 (프리뷰 레포만): `/backend:qa-deploy-allra https://github.com/Allra-Fintech/allra-front-api/pull/1025 https://github.com/Allra-Fintech/allra-usermanage/pull/1228`
+> 사용 예 (프리뷰 레포만): `/backend:qa-deploy-allra https://github.com/Allra-Fintech/<repo>/pull/<번호> https://github.com/Allra-Fintech/<repo>/pull/<번호>`
 >
-> 사용 예 (qa 레포 포함): `/backend:qa-deploy-allra 20260430 https://github.com/Allra-Fintech/allra-v1-admin/pull/181 https://github.com/Allra-Fintech/allra-front-api/pull/910`
+> 사용 예 (qa 레포 포함): `/backend:qa-deploy-allra 20260430 https://github.com/Allra-Fintech/<repo>/pull/<번호> https://github.com/Allra-Fintech/<repo>/pull/<번호>`
 >
 > URL이 하나도 없으면 즉시 위 사용 예를 보여주고 종료한다.
 
@@ -238,8 +238,8 @@ ArgoCD UI로 하려면 Application `<호출앱>-preview-<번호>` → Deployment
 
 | 호출하는 쪽 | 대상 | 연결 방법 | 결과 |
 |---|---|---|---|
-| allra-front #999 | allra-usermanage #1228 | 라벨 `allra-usermanage-pr:1228` | ✅ 자동 |
-| allra-front-api #1025 | allra-usermanage #1228 | env 직접 편집 | ⚠️ 수동 (위 명령어 실행 필요) |
+| `<호출앱>` #`<번호>` | `<대상앱>` #`<번호>` | 라벨 `<대상앱>-pr:<번호>` | ✅ 자동 |
+| `<호출앱>` #`<번호>` | `<대상앱>` #`<번호>` | env 직접 편집 | ⚠️ 수동 (위 명령어 실행 필요) |
 
 **6-5) 프리뷰 · qa 혼합이면 안내한다**
 
