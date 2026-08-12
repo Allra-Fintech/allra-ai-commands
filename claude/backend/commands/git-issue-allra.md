@@ -200,35 +200,62 @@ git fetch origin
 git checkout -b "$BRANCH_NAME" "origin/$BRANCH_NAME"
 ```
 
-#### 4-3. 팀 보드 Status → In Progress (작업 시작 반영)
+#### 4-3. 팀 보드 Status → In Progress (서브 + 부모 전파)
 
-브랜치를 만든 시점이 곧 **작업 착수**다. 팀 보드([올라개발팀 #8](https://github.com/orgs/Allra-Fintech/projects/8))의 해당 서브 이슈 카드를 `In Progress`로 올린다.
+브랜치를 만든 시점이 곧 **작업 착수**다. 팀 보드([올라개발팀 #8](https://github.com/orgs/Allra-Fintech/projects/8))에서 **서브 이슈 → 마스터 → 에픽**까지 거슬러 올라가며 `In Progress`로 올린다.
 
-> **왜 하네스가 하나** — GitHub Projects 내장 워크플로 중 가장 이른 트리거가 `Pull request linked to issue`라, PR을 올리기 전까지 며칠이 통째로 `Todo`로 남는다. 브랜치 생성 시점을 아는 것은 이 커맨드뿐이다.
+> **왜 하네스가 하나** — GitHub Projects 내장 워크플로는 **그 항목 자신의 이벤트**에만 반응한다. 가장 이른 트리거가 `Pull request linked to issue`라 PR 전까지 며칠이 `Todo`로 남고, **"자식이 진행 중이면 부모도"** 같은 관계 전파 규칙은 아예 없다. 브랜치 생성 시점을 알고 부모를 조회할 수 있는 건 이 커맨드뿐이다.
+>
+> ⚠️ **부모 전파를 빼면 팀 현황 뷰가 무의미해진다** — 그 뷰는 마스터·에픽만 보여주므로, 서브만 갱신하면 **실제로는 다들 작업 중인데 보드는 전부 `Todo`** 로 보인다.
 
 ```bash
 PROJECT_ID="PVT_kwDOCrlXKM4BgGMy"          # 올라개발팀 #8
 STATUS_FIELD="PVTSSF_lADOCrlXKM4BgGMyzhaUVJE"
 IN_PROGRESS="450b8d44"
 
-# 서브 이슈의 보드 아이템 id 조회 (보드에 없으면 건너뜀)
-# 주의: $SUB_REPO 는 owner/repo 전체 형태 → 4-2에서 쪼갠 $SUB_OWNER·$SUB_NAME 을 쓴다
-ITEM_ID=$(gh api graphql -f query='
-{ repository(owner:"'"$SUB_OWNER"'", name:"'"$SUB_NAME"'") { issue(number:'"$SUB_NUM"') {
-    projectItems(first:10){ nodes { id project { number } } }
-}}}' --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==8) | .id')
+# 보드 아이템 id 조회 → In Progress 로 (없으면 조용히 skip)
+set_in_progress() {  # $1=owner  $2=repo  $3=issue번호
+  local item
+  item=$(gh api graphql -f query='
+  { repository(owner:"'"$1"'", name:"'"$2"'") { issue(number:'"$3"') {
+      projectItems(first:10){ nodes { id project { number } } }
+  }}}' --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==8) | .id' 2>/dev/null)
+  [ -n "$item" ] && gh project item-edit --id "$item" --project-id "$PROJECT_ID" \
+    --field-id "$STATUS_FIELD" --single-select-option-id "$IN_PROGRESS" >/dev/null 2>&1
+}
 
-if [ -n "$ITEM_ID" ]; then
-  gh project item-edit --id "$ITEM_ID" --project-id "$PROJECT_ID" \
-    --field-id "$STATUS_FIELD" --single-select-option-id "$IN_PROGRESS"
-fi
+# 부모 조회 (네이티브 sub-issue 관계). 없으면 빈 문자열
+get_parent() {  # $1=owner $2=repo $3=번호  →  "owner<TAB>repo<TAB>번호"
+  gh api graphql -f query='
+  { repository(owner:"'"$1"'", name:"'"$2"'") { issue(number:'"$3"') {
+      parent { number repository { name owner { login } } }
+  }}}' --jq '.data.repository.issue.parent | select(.) |
+      [.repository.owner.login, .repository.name, (.number|tostring)] | @tsv' 2>/dev/null
+}
+
+# 1) 서브 이슈  ($SUB_REPO 는 owner/repo 전체 형태 → 4-2에서 쪼갠 값 사용)
+set_in_progress "$SUB_OWNER" "$SUB_NAME" "$SUB_NUM"
+
+# 2) 부모(마스터) → 조부모(에픽) 까지 최대 2단계 거슬러 올라감
+CUR_OWNER="$SUB_OWNER"; CUR_REPO="$SUB_NAME"; CUR_NUM="$SUB_NUM"
+for _ in 1 2; do
+  PARENT=$(get_parent "$CUR_OWNER" "$CUR_REPO" "$CUR_NUM")
+  [ -z "$PARENT" ] && break
+  # ⚠️ 반드시 필드로 쪼개서 넘긴다 — 한 문자열로 넘기면 인자가 1개로 들어가 쿼리가 깨진다
+  CUR_OWNER=$(printf '%s' "$PARENT" | cut -f1)
+  CUR_REPO=$(printf  '%s' "$PARENT" | cut -f2)
+  CUR_NUM=$(printf   '%s' "$PARENT" | cut -f3)
+  set_in_progress "$CUR_OWNER" "$CUR_REPO" "$CUR_NUM"
+done
 ```
 
 - **보드에 없으면 조용히 건너뛴다** — 마스터에 연결되지 않은 서브이슈는 편입되지 않았을 수 있다
-- **실패해도 중단하지 않는다** — 구현 작업이 본체이고 보드 갱신은 부수 효과다. 결과 출력에 실패만 알린다
+- **이미 `In Progress`/`Done`이어도 덮어쓴다** — 착수 신호이므로 되돌림은 사람이 판단. 단 `Done`인 부모를 되돌리고 싶지 않으면 실행 전 상태를 확인할 것
+- **2단계까지만** 올라간다 — 우리 계층은 에픽 → 마스터 → 서브 3층이 최대다
+- **실패해도 중단하지 않는다** — 구현이 본체이고 보드 갱신은 부수 효과다. 결과 출력에 실패만 알린다
 - 필드·옵션 ID가 어긋나면 `gh project field-list 8 --owner Allra-Fintech --format json` 으로 재조회
 
-> 이후 상태 전환은 자동이다 — PR 생성 시 `In Progress` 유지, **PR 머지로 이슈가 close되면 `Done`**.
+> 이후 상태 전환은 자동이다 — **PR 머지로 이슈가 close되면 `Done`**(단, 부모는 하위가 전부 닫혀야 하므로 `/design:result` 시점에 정리한다).
 
 **브랜치 접두사** (서브 이슈 제목/라벨로 매번 판단):
 
@@ -247,7 +274,7 @@ fi
 - 권한 부족 / API 실패 → `git checkout -b "$BRANCH_NAME"` 로컬 fallback + "이슈 링크 수동 연결 필요" 안내
 - `gh auth status` 출력에 `repo` (public 만이면 `public_repo`) scope 필요
 
-#### 4-3. 구현 + 테스트
+#### 4-4. 구현 + 테스트
 
 - 이슈 본문 / 설계 문서 / 참고 파일을 먼저 읽어 기존 컨벤션·패턴 파악
 - 서브 이슈 체크리스트를 하나씩 구현
@@ -274,7 +301,7 @@ fi
 - 오래 걸리는 명령은 백그라운드로 띄우고 그동안 다른 작업을 진행한다
 - Maven(`allra-v1-5-api`)은 `./mvnw test -Dtest=ClassName`, Node(`allra-v1-api`)는 `npx jest {path}` 로 같은 원칙 적용
 
-#### 4-4. PR 생성 후 다음 서브로
+#### 4-5. PR 생성 후 다음 서브로
 
 ```
 {레포}#{서브이슈번호} 구현+테스트 완료
@@ -293,7 +320,7 @@ echo "PR 생성 확인: $SUB_REPO#$PR_NUM"
 cd "$(cat /tmp/git-issue-allra-root.txt)"
 ```
 
-#### 4-5. 모든 서브 이슈 완료 후 안내
+#### 4-6. 모든 서브 이슈 완료 후 안내
 
 ```
 ## 모든 서브 이슈 작업 완료
