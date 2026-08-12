@@ -219,18 +219,22 @@ gh pr edit <호출PR번호> --repo <owner>/<repo> --add-label <대상앱>-pr:<�
 
 대상 PR이 이미 머지·클로즈됐으면 연결해도 connection refused가 난다(살아 있는지는 아무도 검사하지 않는다). 대상 프리뷰가 이번 실행에서 함께 뜬 것인지 확인하고 연결한다.
 
-**6-3) Spring API 4종 — 명령어만 제시**
+**6-3) Spring API 4종 — ArgoCD UI 절차를 안내**
 
-allra-front-api · allra-usermanage · revn-client-api · revn-admin-api 는 아직 라벨 오버라이드 대상이 아니다(서비스 간 URL이 이미지 안 `application.yml`에 있어 앱별 프로퍼티 등록이 필요하다). **커맨드가 실행하지 말고** 아래를 그대로 출력한다.
+allra-front-api · allra-usermanage · revn-client-api · revn-admin-api 는 아직 라벨 오버라이드 대상이 아니다(서비스 간 URL이 이미지 안 `application.yml`에 있어 앱별 프로퍼티 등록이 필요하다). 자동 연결이 불가능하므로 아래 절차를 출력한다.
 
-환경변수 이름은 6-1에서 찾은 프로퍼티 경로를 대문자·언더바로 바꾼 것이다(`internal.usermanage.url` → `INTERNAL_USERMANAGE_URL`).
+**`kubectl`은 안내하지 않는다.** 개발자에게 클러스터 접근 권한이 없고, 소개자료도 ArgoCD UI 편집만 제시한다.
 
-```bash
-kubectl set env deploy/pv-<호출앱>-pr-<호출PR번호> -n app \
-  <ENV_NAME>=http://pv-<대상앱>-pr-<대상PR번호>.app:8080
+```
+ArgoCD → Application  <호출앱>-preview-<호출PR번호>
+       → Deployment   pv-<호출앱>-pr-<호출PR번호>
+       → Edit → env 에 아래 추가 → Save
+
+  - name: <ENV_NAME>
+    value: http://pv-<대상앱>-pr-<대상PR번호>.app:8080
 ```
 
-ArgoCD UI로 하려면 Application `<호출앱>-preview-<번호>` → Deployment `pv-<호출앱>-pr-<번호>` → Edit → env 추가다. 어느 쪽이든 self-heal이 꺼져 있어 되돌려지지 않는다.
+`<ENV_NAME>`은 6-1에서 찾은 프로퍼티 경로를 대문자·언더바로 바꾼 것이다(`internal.usermanage.url` → `INTERNAL_USERMANAGE_URL`). 저장하면 파드가 재시작되고, ArgoCD가 OutOfSync로 표시하지만 self-heal이 꺼져 있어 되돌려지지 않는다.
 
 **이 값은 다음 sync 때 사라진다**는 점을 함께 알린다. 호출하는 쪽에 새 커밋을 푸시하면 이미지 태그가 바뀌며 다시 배포되고, 손으로 넣은 env는 지워진다. 자주 겪을 조합이면 인프라팀에 라벨 오버라이드 등록을 요청하도록 안내한다.
 
