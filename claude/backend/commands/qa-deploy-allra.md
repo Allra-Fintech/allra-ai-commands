@@ -248,13 +248,15 @@ ArgoCD UI로 하려면 Application `<호출앱>-preview-<번호>` → Deployment
 이때 진행을 막거나 방식을 바꾸지 말고 아래를 안내만 한다. 판단은 사용자가 한다.
 
 ```
-allra-v1-admin #181 은 dev에 배포되므로 dev의 allra-usermanage를 호출합니다.
-프리뷰로 올린 allra-usermanage #1228 의 변경은 여기서 걸리지 않습니다.
+<qa레포> #<번호> 는 dev에 배포되므로 dev의 <대상앱>을 호출합니다.
+프리뷰로 올린 <대상앱> #<번호> 의 변경은 여기서 걸리지 않습니다.
 
-  · v1-admin에서 usermanage 변경까지 함께 검증하려면
-    → allra-usermanage 도 같은 qa/YYYYMMDD 로 올리세요
-  · usermanage 변경과 무관한 QA면 그대로 진행하셔도 됩니다
+  · <qa레포>에서 <대상앱> 변경까지 함께 검증하려면
+    → <대상앱> 도 같은 qa/YYYYMMDD 로 올리세요
+  · <대상앱> 변경과 무관한 QA면 그대로 진행하셔도 됩니다
 ```
+
+호출 관계는 6-1과 같은 방식으로 확인된 조합만 안내한다. 확인되지 않은 조합을 호출 관계로 단정하지 않는다.
 
 ## 알아둘 것
 
