@@ -1,6 +1,6 @@
 ---
-description: PR/이슈 URL을 레포별 배포 방식(프리뷰 라벨 · qa 브랜치)에 맞게 배포하고 결과 보고
-argument-hint: "[YYYYMMDD] <PR_URL...>"
+description: PR/이슈 URL을 레포별 배포 방식(프리뷰 라벨 · qa 브랜치)에 맞게 배포하고 결과 보고. URL 없이 호출하면 내 열린 PR을 탐색해 선택받는다
+argument-hint: "[YYYYMMDD] [PR_URL...]"
 ---
 
 GitHub PR/이슈 URL 목록을 받아 각 레포의 배포 방식에 맞게 QA 환경을 올리고 결과를 보고합니다.
@@ -11,7 +11,9 @@ GitHub PR/이슈 URL 목록을 받아 각 레포의 배포 방식에 맞게 QA �
 >
 > 사용 예 (qa 레포 포함): `/backend:qa-deploy-allra 20260430 https://github.com/Allra-Fintech/<repo>/pull/<번호> https://github.com/Allra-Fintech/<repo>/pull/<번호>`
 >
-> URL이 하나도 없으면 즉시 위 사용 예를 보여주고 종료한다.
+> 사용 예 (탐색): `/backend:qa-deploy-allra` — 내가 작성한 열린 PR을 찾아 목록으로 보여주고 선택받는다 (Step 0)
+
+URL이 하나도 없으면 종료하지 않고 **Step 0(내 PR 탐색)**으로 간다.
 
 ## 레포마다 배포 방식이 다르다
 
@@ -33,14 +35,45 @@ GitHub PR/이슈 URL 목록을 받아 각 레포의 배포 방식에 맞게 QA �
 ## 입력 형식
 
 ```
-/backend:qa-deploy-allra [YYYYMMDD] <URL1> <URL2> ...
+/backend:qa-deploy-allra [YYYYMMDD] [URL1] [URL2] ...
 ```
 
 - 첫 번째 인자가 8자리 숫자면 **QA 날짜**로 해석하고, 아니면 전부 URL로 본다
 - 날짜는 qa 브랜치 방식 레포가 하나라도 있을 때만 필요하다. 날짜 없이 들어왔는데 qa 레포가 섞여 있으면 Step 2에서 사용자에게 날짜를 물은 뒤 진행한다
 - qa 브랜치명은 `qa/YYYYMMDD`
+- **URL이 0개면 Step 0**으로 탐색한다. 날짜만 준 경우(`/backend:qa-deploy-allra 20260812`)도 URL 0개이므로 Step 0으로 가고, 찾은 PR에 그 날짜를 적용한다
 
 ## 절차
+
+### Step 0: URL이 없으면 내 열린 PR 탐색
+
+```bash
+gh search prs --author=@me --state=open --owner=Allra-Fintech \
+  --limit 30 --json repository,number,title,isDraft,updatedAt
+```
+
+- `isDraft=true`는 제외한다 (QA 대상이 아니다)
+- `updatedAt` 최신순으로 정렬해 번호를 붙여 보여준다
+- 결과가 0건이거나 명령이 인증·권한으로 실패하면, 그때는 위 사용 예를 출력하고 종료한다
+
+```
+인자가 없어 내 열린 PR을 찾았습니다. 어떤 걸 QA에 올릴까요?
+
+  1. allra-usermanage    #1279  [♻️ Refactor] ...        (2일 전)
+  2. kiwoom-capital-mt   #36    [♻️ Refactor] ...        (2일 전)
+  3. allra-front-api     #1046  [✨ Feature] ...         (5일 전)
+  ...
+
+번호로 선택하세요 (예: `1 2`, `1,2`).
+```
+
+**전부 자동으로 배포하지 않는다.** 사용자가 고른 것만 Step 1로 넘긴다. 열린 PR은 주제가 섞여 있고(오래 방치된 것, 다른 기능 것) 한꺼번에 올리면 서로 덮어쓰거나 무관한 변경이 QA에 섞인다.
+
+- "전부"를 선택하면 그대로 진행하되, 아래 두 경우는 진행 전에 짚어 준다
+- **같은 레포에 2건 이상**을 골랐고 그 레포가 qa 브랜치 방식이면, 한 `qa/YYYYMMDD`에 여러 feature가 함께 머지된다는 점을 알린다 (프리뷰 방식은 PR별로 격리되니 문제없다)
+- **14일 넘게 갱신 없는 PR**은 목록에 `⚠️ 오래됨`으로 표시한다. develop이 많이 앞서 있어 프리뷰 워크플로우가 없는 브랜치일 가능성이 높다 (Step 3A-1에서 걸린다)
+
+선택을 못 받았으면 진행하지 않는다. 침묵을 "전부"로 해석하지 않는다.
 
 ### Step 1: URL 파싱 + PR 정보 + 배포 방식 판별
 
