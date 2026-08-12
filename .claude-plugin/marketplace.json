@@ -9,7 +9,7 @@
     {
       "name": "backend",
       "source": "./claude/backend",
-      "description": "백엔드 직무용 커맨드 (Git Issue, PR 생성/피드백/리뷰)",
+      "description": "백엔드 직무용 커맨드 (PR 생성/피드백/리뷰)",
       "category": "role",
       "tags": ["backend", "java", "spring"]
     },

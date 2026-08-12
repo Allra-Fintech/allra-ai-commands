@@ -18,16 +18,13 @@ Claude Code 안에서 다음 두 명령을 실행:
 ```
 
 직무별 플러그인:
-- `backend@allra-ai-commands` — 백엔드 (Git Issue, PR 생성/피드백/리뷰)
+- `backend@allra-ai-commands` — 백엔드 (PR 생성/피드백/리뷰)
 - `frontend@allra-ai-commands` — 프론트엔드 (개발 워크플로, 코드 점검, 리팩토링)
 - `common@allra-ai-commands` — 공통 (Linear 이슈 등)
 
 설치 후 커맨드는 네임스페이스가 붙은 형태로 호출합니다:
 
 ```text
-/backend:pr-create-allra
-/backend:pr-feedback-allra
-/backend:git-issue-allra
 /backend:pr-create
 /backend:pr-feedback
 /backend:pr-review
@@ -93,15 +90,25 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 
 ## 커맨드 목록
 
+## 올라 전용 커맨드 이관 (2026-08)
+
+`-allra` 접미사가 붙어 있던 올라 스쿼드 전용 커맨드는 팀 전용 레포 [allra-squad-harness](https://github.com/Allra-Fintech/allra-squad-harness)로 옮겼습니다. 이 레포는 b2b 스쿼드와 공유하는 곳이라 접미사로 구분해야 했는데, 전용 레포로 가면서 필요 없어졌습니다.
+
+| 이전 (여기) | 현재 (allra-squad-harness) |
+|---|---|
+| `/backend:git-issue-allra` | `/allra:git-issue` |
+| `/backend:pr-create-allra` | `/allra:pr-create` |
+| `/backend:pr-feedback-allra` | `/allra:pr-feedback` |
+| `/backend:qa-deploy-allra` | `/allra:qa-deploy` |
+
+접미사 없는 `/backend:pr-create` · `pr-feedback` · `pr-review`는 **별개 커맨드로 여기 그대로 남습니다.**
+
 ### claude (플러그인 마켓플레이스)
 
 #### backend
 - `pr-review.md` - PR 생성 전 변경사항을 사전 검토하는 1차 셀프 리뷰 커맨드입니다.
 - `pr-create.md` - 변경사항을 분석하여 브랜치 생성부터 PR 생성까지 자동으로 수행합니다.
 - `pr-feedback.md` - PR에 달린 리뷰 코멘트를 분석하고 코드에 반영합니다.
-- `pr-create-allra.md` - (올라 스쿼드용) 변경사항을 파악하여 커밋 및 템플릿을 준수하여 PR 생성을 수행합니다.
-- `pr-feedback-allra.md` - (올라 스쿼드용) PR 피드백 자동 처리 — CI 수정, CodeRabbit 리뷰 반영, 승인 대기까지 반복 수행.
-- `git-issue-allra.md` - (올라 스쿼드용) Git Issue 기반 기능 개발/버그 수정 자동화 및 구현 완료 보고서 등록.
 
 #### frontend
 - `flow.md` - develop 체크아웃 → 이슈 생성 → 브랜치 생성 → 작업 → 커밋 → 푸쉬 → PR 풀 워크플로.
