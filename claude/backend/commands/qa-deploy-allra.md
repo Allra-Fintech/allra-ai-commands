@@ -191,9 +191,58 @@ gh run list --repo <owner>/<repo> --branch qa/YYYYMMDD --limit 1 \
 
 스킵된 항목(닫힌 PR, 이슈에 연결된 PR 없음, 머지 충돌, 브랜치에 preview-workflow.yml 없음)은 별도 섹션으로 사유와 함께 정리한다.
 
+### Step 6: 프리뷰끼리 연결
+
+프리뷰는 앱의 실제 dev 값을 물려받으므로, 그냥 두면 **다른 서비스는 전부 dev를 호출한다.** 이번 실행으로 프리뷰가 2개 이상 떴다면 서로 연결해 준다. 프리뷰가 하나뿐이면 이 단계는 건너뛴다.
+
+**6-1) 호출 관계 판정**
+
+호출하는 쪽 설정에 대상 앱의 dev 주소(`http://<대상앱>.app:`)가 있으면 호출 관계다.
+
+```bash
+gh api repos/<owner>/<repo>/contents/src/main/resources/application.yml?ref=<feature-branch> \
+  --jq '.content' | base64 -d | grep -n "<대상앱>.app"
+```
+
+프론트·파이썬 앱은 설정 파일 위치가 제각각이라 이 grep이 안 먹는다. 아래 6-2의 지원 앱 목록에 있으면 판정을 생략하고 바로 연결한다.
+
+**6-2) 라벨 오버라이드 지원 앱 — 자동 연결**
+
+지원 앱: allra-front · revn-front · revn-admin-front · allra-admin · settlement-calendar · allra-python-scm-crawler
+
+```bash
+gh label create <대상앱>-pr:<대상PR번호> --repo <owner>/<repo> --color 0E8A16
+gh pr edit <호출PR번호> --repo <owner>/<repo> --add-label <대상앱>-pr:<대상PR번호>
+```
+
+라벨 이름은 **호출당하는 서비스 기준**이고, 붙이는 곳은 **호출하는 쪽 PR**이다. 라벨 생성이 "이미 존재"로 실패하면 무시하고 부착만 한다. 60초 안에 반영되며, 붙여 두면 새 커밋을 푸시해도 유지된다.
+
+대상 PR이 이미 머지·클로즈됐으면 연결해도 connection refused가 난다(살아 있는지는 아무도 검사하지 않는다). 대상 프리뷰가 이번 실행에서 함께 뜬 것인지 확인하고 연결한다.
+
+**6-3) Spring API 4종 — 명령어만 제시**
+
+allra-front-api · allra-usermanage · revn-client-api · revn-admin-api 는 아직 라벨 오버라이드 대상이 아니다(서비스 간 URL이 이미지 안 `application.yml`에 있어 앱별 프로퍼티 등록이 필요하다). **커맨드가 실행하지 말고** 아래를 그대로 출력한다.
+
+환경변수 이름은 6-1에서 찾은 프로퍼티 경로를 대문자·언더바로 바꾼 것이다(`internal.usermanage.url` → `INTERNAL_USERMANAGE_URL`).
+
+```bash
+kubectl set env deploy/pv-<호출앱>-pr-<호출PR번호> -n app \
+  <ENV_NAME>=http://pv-<대상앱>-pr-<대상PR번호>.app:8080
+```
+
+ArgoCD UI로 하려면 Application `<호출앱>-preview-<번호>` → Deployment `pv-<호출앱>-pr-<번호>` → Edit → env 추가다. 어느 쪽이든 self-heal이 꺼져 있어 되돌려지지 않는다.
+
+**이 값은 다음 sync 때 사라진다**는 점을 함께 알린다. 호출하는 쪽에 새 커밋을 푸시하면 이미지 태그가 바뀌며 다시 배포되고, 손으로 넣은 env는 지워진다. 자주 겪을 조합이면 인프라팀에 라벨 오버라이드 등록을 요청하도록 안내한다.
+
+**6-4) 결과 보고**
+
+| 호출하는 쪽 | 대상 | 연결 방법 | 결과 |
+|---|---|---|---|
+| allra-front #999 | allra-usermanage #1228 | 라벨 `allra-usermanage-pr:1228` | ✅ 자동 |
+| allra-front-api #1025 | allra-usermanage #1228 | env 직접 편집 | ⚠️ 수동 (위 명령어 실행 필요) |
+
 ## 알아둘 것
 
-- 프리뷰는 앱의 실제 dev 값을 물려받으므로 **다른 서비스는 전부 dev를 호출한다.** 프리뷰끼리 연결해야 하면 사내 「브랜치별 배포」 소개자료의 06장(TWO WAYS·USAGE)을 참고하도록 안내한다
 - 프리뷰는 dev와 **같은 `app` 네임스페이스·같은 DB**를 쓴다. 격리된 환경이 아니므로 데이터를 건드리는 QA는 dev와 동일한 주의가 필요하다
 - `DRY_RUN`은 각 앱의 `values-dev`를 그대로 물려받는다
 - 프리뷰는 PR이 닫히거나 `preview` 라벨을 떼면 자동으로 사라진다. 따로 정리할 것 없음
