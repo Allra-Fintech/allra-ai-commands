@@ -200,6 +200,36 @@ git fetch origin
 git checkout -b "$BRANCH_NAME" "origin/$BRANCH_NAME"
 ```
 
+#### 4-3. 팀 보드 Status → In Progress (작업 시작 반영)
+
+브랜치를 만든 시점이 곧 **작업 착수**다. 팀 보드([올라개발팀 #8](https://github.com/orgs/Allra-Fintech/projects/8))의 해당 서브 이슈 카드를 `In Progress`로 올린다.
+
+> **왜 하네스가 하나** — GitHub Projects 내장 워크플로 중 가장 이른 트리거가 `Pull request linked to issue`라, PR을 올리기 전까지 며칠이 통째로 `Todo`로 남는다. 브랜치 생성 시점을 아는 것은 이 커맨드뿐이다.
+
+```bash
+PROJECT_ID="PVT_kwDOCrlXKM4BgGMy"          # 올라개발팀 #8
+STATUS_FIELD="PVTSSF_lADOCrlXKM4BgGMyzhaUVJE"
+IN_PROGRESS="450b8d44"
+
+# 서브 이슈의 보드 아이템 id 조회 (보드에 없으면 건너뜀)
+# 주의: $SUB_REPO 는 owner/repo 전체 형태 → 4-2에서 쪼갠 $SUB_OWNER·$SUB_NAME 을 쓴다
+ITEM_ID=$(gh api graphql -f query='
+{ repository(owner:"'"$SUB_OWNER"'", name:"'"$SUB_NAME"'") { issue(number:'"$SUB_NUM"') {
+    projectItems(first:10){ nodes { id project { number } } }
+}}}' --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==8) | .id')
+
+if [ -n "$ITEM_ID" ]; then
+  gh project item-edit --id "$ITEM_ID" --project-id "$PROJECT_ID" \
+    --field-id "$STATUS_FIELD" --single-select-option-id "$IN_PROGRESS"
+fi
+```
+
+- **보드에 없으면 조용히 건너뛴다** — 마스터에 연결되지 않은 서브이슈는 편입되지 않았을 수 있다
+- **실패해도 중단하지 않는다** — 구현 작업이 본체이고 보드 갱신은 부수 효과다. 결과 출력에 실패만 알린다
+- 필드·옵션 ID가 어긋나면 `gh project field-list 8 --owner Allra-Fintech --format json` 으로 재조회
+
+> 이후 상태 전환은 자동이다 — PR 생성 시 `In Progress` 유지, **PR 머지로 이슈가 close되면 `Done`**.
+
 **브랜치 접두사** (서브 이슈 제목/라벨로 매번 판단):
 
 | 유형 | 접두사 |
