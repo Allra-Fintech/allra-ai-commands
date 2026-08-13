@@ -30,7 +30,6 @@ Claude Code 안에서 다음 두 명령을 실행:
 /backend:pr-review
 /frontend:flow
 /frontend:audit
-/frontend:qa
 /frontend:refactor
 /frontend:cp
 /common:linear
@@ -113,7 +112,6 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 #### frontend
 - `flow.md` - develop 체크아웃 → 이슈 생성 → 브랜치 생성 → 작업 → 커밋 → 푸쉬 → PR 풀 워크플로.
 - `audit.md` - develop~HEAD 변경사항의 엣지 케이스·로직 오류 점검.
-- `qa.md` - 현재 브랜치 변경사항을 `qa/<번호>` 브랜치로 rebase 후 push, 원래 브랜치 복귀.
 - `refactor.md` - develop~HEAD 변경사항을 켄트 백(Kent Beck) 관점으로 리팩토링.
 - `cp.md` - 변경사항 전체 점검 후 커밋 메시지 작성하고 푸쉬.
 
