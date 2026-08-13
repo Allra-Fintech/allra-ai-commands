@@ -48,7 +48,7 @@ allowed-tools: Bash(git:*), Read, Grep, AskUserQuestion
 
    대상: origin/<branch>  (업스트림 <있음: 기존 추적 브랜치 | 없음: -u 로 새로 생성>)
 
-   나갈 커밋:
+   커밋 내역:
    <git log @{u}..HEAD --oneline 결과. 업스트림 없으면 origin/develop..HEAD 기준>
 
    커밋 메시지 전문:

@@ -109,7 +109,7 @@ PR base 를 develop 으로 하드코딩하면 develop 이 없는 레포에서 `g
 대상: origin/<branch>  (새 브랜치 · -u 로 업스트림 생성)
 분기 기준: <기준브랜치> (<sha>)
 
-나갈 커밋:
+커밋 내역:
 <git log origin/<기준브랜치>..HEAD --oneline 결과>
 
 경고:

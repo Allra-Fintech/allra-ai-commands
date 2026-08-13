@@ -56,7 +56,7 @@ allowed-tools: Bash(git:*), Bash(gh:*), AskUserQuestion
 방식: <케이스 A: 신규 브랜치 생성 (-u) | 케이스 B: force push (--force-with-lease)>
 소스 브랜치: <원래브랜치> (HEAD: <sha>)
 
-나갈 커밋:
+커밋 내역:
 <케이스 A: git log origin/develop..HEAD --oneline
  케이스 B: git log origin/qa/<번호>..HEAD --oneline>
 
