@@ -1,11 +1,20 @@
 ---
 description: develop 체크아웃 → 이슈 생성 → 브랜치 생성 → 작업 → 커밋 → 푸쉬 → PR 풀 워크플로
-allowed-tools: Bash(git:*), Bash(gh:*), Read, Edit, Write, Grep, Glob
+allowed-tools: Bash(git:*), Bash(gh:*), Read, Edit, Write, Grep, Glob, AskUserQuestion
 ---
 
 이슈 등록부터 PR 생성까지 한 번에 진행하는 풀 워크플로입니다.
 
 작업할 내용: $ARGUMENTS
+
+## 원격 반영 게이트
+
+이 워크플로에는 원격에 흔적을 남기는 작업이 세 번 있습니다: **이슈 생성(4단계)**, **푸쉬(8단계)**, **PR 생성(9단계)**.
+세 지점 모두 실행 직전에 AskUserQuestion으로 승인받고 진행합니다. 승인 없이 원격에 쓰지 않습니다.
+
+$ARGUMENTS 에 `--yes` 가 포함되어 있으면 세 게이트를 모두 생략하고 자동 진행합니다.
+단, 푸쉬 대상이 보호 브랜치(main/master/develop)인 경우는 `--yes` 여도 확인합니다.
+(`--yes` 는 작업 지시문에서 제외하고 해석합니다.)
 
 ## 단계
 
@@ -15,8 +24,22 @@ allowed-tools: Bash(git:*), Bash(gh:*), Read, Edit, Write, Grep, Glob
 - `gh auth status` 로 GitHub CLI 인증 확인
 
 ### 2. develop 브랜치로 이동 & 동기화
-- `git checkout develop` (develop이 없으면 main으로 fallback하고 사용자에게 안내)
-- `git pull origin develop` 으로 최신화
+- `git checkout develop`
+- develop이 없으면 main으로 fallback하고 사용자에게 안내
+- `git pull origin <기준브랜치>` 로 최신화
+
+**기준 브랜치 확정**
+
+이 단계에서 실제로 체크아웃한 브랜치를 `<기준브랜치>` 로 확정하고, 이후 단계에서 일관되게 사용합니다.
+기본값은 `develop` 이며, fallback이 일어났을 때만 `main` 이 됩니다.
+
+`<기준브랜치>` 를 참조하는 곳:
+- 5단계 분기 기준
+- 게이트 ②의 "분기 기준" 표시와 `git log` 비교 대상
+- 게이트 ③의 PR base (`gh pr create --base`)
+
+fallback이 발생했다면 게이트 ②③의 경고란에 "develop 부재로 main 기준 사용"을 반드시 표시합니다.
+PR base 를 develop 으로 하드코딩하면 develop 이 없는 레포에서 `gh pr create` 가 실패하므로, 확정된 값을 그대로 씁니다.
 
 ### 3. 이슈 컨벤션 파악
 다음 순서로 이슈 템플릿/컨벤션을 확인:
@@ -33,14 +56,37 @@ allowed-tools: Bash(git:*), Bash(gh:*), Read, Edit, Write, Grep, Glob
   - **배경/문제**: 왜 이 작업이 필요한가
   - **할 일**: 구체적인 작업 항목
   - **완료 조건**: Definition of Done
-- `gh issue create --title "..." --body "..." --label "..."` 로 이슈 등록
-- 이슈 번호와 종류(라벨/제목 prefix)를 추출
+
+**게이트 ① 이슈 생성 전 확인**
+
+등록 전에 아래를 그대로 보여주고 승인받습니다.
+
+```
+## 이슈 생성 전 확인
+
+대상 레포: <owner/repo>
+
+제목: <title>
+라벨: <labels 또는 "없음">
+
+본문:
+---
+<이슈 본문 전문. 요약하지 말고 등록될 내용 그대로>
+---
+```
+
+선택지: `생성` / `수정 요청` / `중단`
+- **생성**: `gh issue create --title "..." --body "..." --label "..."` 실행
+- **수정 요청**: 사용자 피드백을 반영해 다시 이 확인으로 돌아옴
+- **중단**: 워크플로 종료
+
+- 등록 후 이슈 번호와 종류(라벨/제목 prefix)를 추출
 
 ### 5. 브랜치 생성
 - 이슈 종류와 번호로 브랜치명 구성: `<type>/<issue-number>`
   - 예: `feat/123`, `fix/45`, `refactor/67`
   - 프로젝트에 다른 컨벤션이 있으면 그 패턴을 따름 (최근 브랜치들 확인: `git branch -r --sort=-committerdate | head -10`)
-- `git checkout -b <type>/<number>` 로 develop에서 분기
+- `git checkout -b <type>/<number>` 로 `<기준브랜치>` (2단계에서 확정)에서 분기
 
 ### 6. 작업 수행
 - $ARGUMENTS 에 명시된 작업을 수행
@@ -54,7 +100,26 @@ allowed-tools: Bash(git:*), Bash(gh:*), Read, Edit, Write, Grep, Glob
 - 큰 변경은 논리적 단위로 여러 커밋으로 분리
 
 ### 8. 푸쉬
-- `git push -u origin <branch>` 로 원격에 업스트림과 함께 푸쉬
+
+**게이트 ② 푸쉬 전 확인**
+
+```
+## 푸쉬 전 확인
+
+대상: origin/<branch>  (새 브랜치 · -u 로 업스트림 생성)
+분기 기준: <기준브랜치> (<sha>)
+
+나갈 커밋:
+<git log origin/<기준브랜치>..HEAD --oneline 결과>
+
+경고:
+- <2단계에서 fallback이 일어났다면 "develop 부재로 main 기준 사용" 표시>
+- <보호 브랜치 여부 / 민감정보·디버그 잔여물 / 그 외 발견 사항. 없으면 "없음">
+```
+
+선택지: `푸쉬` / `중단`
+- **푸쉬**: `git push -u origin <branch>` 로 원격에 업스트림과 함께 푸쉬
+- **중단**: 커밋은 로컬에 남겨두고 종료. 이미 생성된 이슈 번호를 안내
 
 ### 9. PR 생성
 - PR 템플릿 확인: `.github/pull_request_template.md`
@@ -63,8 +128,31 @@ allowed-tools: Bash(git:*), Bash(gh:*), Read, Edit, Write, Grep, Glob
   - **연결된 이슈**: `Closes #<번호>`
   - **변경사항**: 무엇을 바꿨는지
   - **테스트 계획**: 어떻게 검증하는지
-- base는 develop, head는 작업 브랜치
-- `gh pr create --base develop --title "..." --body "..."`
+- base는 `<기준브랜치>` (2단계에서 확정), head는 작업 브랜치
+
+**게이트 ③ PR 생성 전 확인**
+
+```
+## PR 생성 전 확인
+
+base: <기준브랜치>  ←  head: <branch>
+대상 레포: <owner/repo>
+
+제목: <title>
+
+본문:
+---
+<PR 본문 전문. 요약하지 말고 생성될 내용 그대로>
+---
+
+경고:
+- <2단계에서 fallback이 일어났다면 "develop 부재로 base 를 main 으로 사용" 표시. 없으면 "없음">
+```
+
+선택지: `생성` / `수정 요청` / `중단`
+- **생성**: `gh pr create --base <기준브랜치> --title "..." --body "..."` 실행
+- **수정 요청**: 사용자 피드백을 반영해 다시 이 확인으로 돌아옴
+- **중단**: 푸쉬된 브랜치명을 안내하고 종료 (나중에 수동으로 PR 생성 가능)
 
 ### 10. 결과 정리
 - 이슈 URL
@@ -75,6 +163,9 @@ allowed-tools: Bash(git:*), Bash(gh:*), Read, Edit, Write, Grep, Glob
 ## 주의사항
 
 - 각 단계에서 실패하면 즉시 중단하고 사용자에게 보고
+- **세 게이트(이슈 생성·푸쉬·PR 생성)를 승인 없이 통과하지 않음.** 예외는 `--yes` 인자뿐
+- 게이트에서 본문을 보여줄 때 요약·생략하지 않음. 실제로 등록될 내용을 그대로 노출
+- 게이트 ②③의 기준 브랜치·PR base 는 2단계에서 확정한 `<기준브랜치>` 를 그대로 사용. develop 으로 하드코딩하지 않음 (fallback 시 `gh pr create` 실패)
 - 이슈/PR 본문에는 자동생성 멘트 최소화, 핵심 정보 중심
 - $ARGUMENTS가 너무 모호하면 작업 시작 전에 사용자에게 명확히 묻기
 - 보호 브랜치(develop/main)는 직접 푸쉬하지 않음, 반드시 PR 경유
