@@ -17,23 +17,23 @@ Linear MCP로 현재 이슈를 빠르게 조회하는 기본 슬래시 커맨드
 - `-f, --format <table|json|compact|md>`: 출력 형식
 
 ## 사용법
-- `/linear`
+- `/common:linear`
   - 팀 미지정이면 현재 사용자가 속한 팀을 후보로 보여주고 하나 선택
   - assignee 미지정 → `me`
   - state 미지정 → `open` 계열 기본값으로 필터
   - limit 기본값 `20`
   - 결과는 `[ID] [Title] [State] [Assignee] [Updated] [URL]` 테이블로 출력
 
-- `/linear -t platform -a me -n 30`
+- `/common:linear -t platform -a me -n 30`
   - platform 팀, 내 담당, 최근 30건 조회
 
-- `/linear -q "로그인" -s in progress -n 10`
+- `/common:linear -q "로그인" -s in progress -n 10`
   - "로그인" 검색어가 들어간 진행중 이슈 10건 조회
 
-- `/linear -a me -f json`
+- `/common:linear -a me -f json`
   - 자동 처리/스크립팅 용도로 JSON 형식 출력
 
-- `/linear -s blocked`
+- `/common:linear -s blocked`
   - 상태만 blocked로 지정해서 조회
 
 ## 워크플로우
@@ -73,8 +73,8 @@ Linear MCP로 현재 이슈를 빠르게 조회하는 기본 슬래시 커맨드
 - 동일 요청은 동일 정렬/형식으로 일관되게 제공
 
 ## 별칭 제안
-- `/linear` (기본 조회)
+- `/common:linear` (기본 조회)
 - `/linear-mine` (shorthand: 내 담당 오픈 이슈)
 - `/linear-search` (query 중심 조회)
 
-이 문서에서는 단일 커맨드 `/linear` 구현을 중심으로 작성하고, 위 별칭은 필요 시 추후 분기 커맨드로 분리 가능.
+이 문서에서는 단일 커맨드 `/common:linear` 구현을 중심으로 작성하고, 위 별칭은 필요 시 추후 분기 커맨드로 분리 가능.

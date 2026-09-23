@@ -18,7 +18,7 @@
       "source": "./claude/frontend",
       "description": "프론트엔드 직무용 커맨드 (개발 워크플로, 코드 점검, 리팩토링)",
       "category": "role",
-      "tags": ["frontend", "workflow", "refactor", "audit", "qa"]
+      "tags": ["frontend", "workflow", "refactor", "audit"]
     },
     {
       "name": "common",

@@ -95,10 +95,10 @@ curl -sL https://raw.githubusercontent.com/Allra-Fintech/allra-ai-commands/main/
 
 | 이전 (여기) | 현재 (allra-squad-harness) |
 |---|---|
-| `/backend:git-issue-allra` | `/allra:git-issue` |
-| `/backend:pr-create-allra` | `/allra:pr-create` |
-| `/backend:pr-feedback-allra` | `/allra:pr-feedback` |
-| `/backend:qa-deploy-allra` | `/allra:qa-deploy` |
+| `/backend:git-issue-allra` | `/allra-dev:git-issue` |
+| `/backend:pr-create-allra` | `/allra-dev:pr-create` |
+| `/backend:pr-feedback-allra` | `/allra-dev:pr-feedback` |
+| `/backend:qa-deploy-allra` | `/allra-dev:qa-deploy` |
 
 접미사 없는 `/backend:pr-create` · `pr-feedback` · `pr-review`는 **별개 커맨드로 여기 그대로 남습니다.**
 
